@@ -1,33 +1,45 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Riftbound — Suivi des dépenses</title>
+<title>TCG Expense Tracker</title>
 <style>
-  :root[data-theme="violet"]{
+  :root[data-theme="fury"]{
+    --bg:#190d10; --bg-elevated:#241216; --bg-card:#2d171c; --border:#48232b;
+    --text:#fff0f1; --text-dim:#d2a3aa; --accent:#ef4444; --accent-strong:#dc2626;
+    --accent-soft:rgba(239,68,68,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
+    --warn:#facc15; --success:#4ade80; --accent-text:#fff;
+  }
+  :root[data-theme="body"]{
+    --bg:#1b100a; --bg-elevated:#26160d; --bg-card:#301c11; --border:#4a2b1c;
+    --text:#fff3eb; --text-dim:#d5ad96; --accent:#f97316; --accent-strong:#ea580c;
+    --accent-soft:rgba(249,115,22,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
+    --warn:#facc15; --success:#4ade80; --accent-text:#fff;
+  }
+  :root[data-theme="mind"]{
+    --bg:#0c1424; --bg-elevated:#111e35; --bg-card:#172844; --border:#25416a;
+    --text:#edf5ff; --text-dim:#9db8dc; --accent:#3b82f6; --accent-strong:#2563eb;
+    --accent-soft:rgba(59,130,246,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
+    --warn:#facc15; --success:#4ade80; --accent-text:#fff;
+  }
+  :root[data-theme="calm"]{
+    --bg:#0c1812; --bg-elevated:#11231a; --bg-card:#17301f; --border:#285236;
+    --text:#effcf2; --text-dim:#a4c9ab; --accent:#22c55e; --accent-strong:#16a34a;
+    --accent-soft:rgba(34,197,94,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
+    --warn:#facc15; --success:#4ade80; --accent-text:#07130b;
+  }
+  :root[data-theme="order"]{
+    --bg:#18150a; --bg-elevated:#25200d; --bg-card:#302a12; --border:#4c421d;
+    --text:#fff9e5; --text-dim:#d2c18b; --accent:#eab308; --accent-strong:#ca8a04;
+    --accent-soft:rgba(234,179,8,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
+    --warn:#facc15; --success:#4ade80; --accent-text:#171205;
+  }
+  :root[data-theme="chaos"]{
     --bg:#12101c; --bg-elevated:#181527; --bg-card:#1d1930; --border:#2c2645;
     --text:#f1eef9; --text-dim:#a79fc4; --accent:#a78bfa; --accent-strong:#8b5cf6;
     --accent-soft:rgba(167,139,250,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80;
-  }
-  :root[data-theme="ember"]{
-    --bg:#160f0d; --bg-elevated:#1e1512; --bg-card:#241a16; --border:#3a2620;
-    --text:#f7ece7; --text-dim:#c9a99a; --accent:#fb7a4a; --accent-strong:#e35a2d;
-    --accent-soft:rgba(251,122,74,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80;
-  }
-  :root[data-theme="tide"]{
-    --bg:#0d1420; --bg-elevated:#111c2c; --bg-card:#152234; --border:#213249;
-    --text:#e9f1fb; --text-dim:#93aecb; --accent:#4fd1e5; --accent-strong:#22b8cf;
-    --accent-soft:rgba(79,209,229,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80;
-  }
-  :root[data-theme="gold"]{
-    --bg:#14120c; --bg-elevated:#1b1810; --bg-card:#211d13; --border:#332c1c;
-    --text:#f7f2e4; --text-dim:#c9ba8e; --accent:#e7bd52; --accent-strong:#cf9f2e;
-    --accent-soft:rgba(231,189,82,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80;
+    --warn:#facc15; --success:#4ade80; --accent-text:#0c0a12;
   }
 
   * { box-sizing: border-box; }
@@ -54,7 +66,7 @@
     font-size:0.92rem; font-weight:600; transition: transform .08s ease, opacity .15s ease;
   }
   button:active { transform: scale(0.98); }
-  .btn-primary { background:var(--accent-strong); color:#0c0a12; }
+  .btn-primary { background:var(--accent-strong); color:var(--accent-text); }
   .btn-primary:hover { opacity:.9; }
   .btn-ghost { background:transparent; color:var(--text-dim); border:1px solid var(--border); }
   .btn-ghost:hover { color:var(--text); border-color:var(--accent); }
@@ -156,8 +168,8 @@
 <!-- ============ AUTH SCREEN ============ -->
 <div id="auth-screen">
   <div class="auth-box">
-    <h1 id="auth-title">Se connecter</h1>
-    <p class="auth-sub">Suivi des dépenses Riftbound</p>
+    <h1 id="auth-title">Sign in</h1>
+    <p class="auth-sub">Track your TCG expenses</p>
     <div class="auth-error" id="auth-error" role="alert"></div>
     <form id="auth-form">
       <div class="auth-field">
@@ -165,14 +177,14 @@
         <input type="email" id="auth-email" autocomplete="email" required>
       </div>
       <div class="auth-field">
-        <label for="auth-password">Mot de passe</label>
+        <label for="auth-password">Password</label>
         <input type="password" id="auth-password" autocomplete="current-password" required minlength="6">
       </div>
-      <button type="submit" class="btn-primary" style="width:100%" id="auth-submit">Se connecter</button>
+      <button type="submit" class="btn-primary" style="width:100%" id="auth-submit">Sign in</button>
     </form>
     <div class="auth-toggle">
-      <span id="auth-toggle-text">Pas encore de compte ?</span>
-      <button type="button" id="auth-toggle-btn">Créer un compte</button>
+      <span id="auth-toggle-text">Don't have an account yet?</span>
+      <button type="button" id="auth-toggle-btn">Create an account</button>
     </div>
   </div>
 </div>
@@ -182,49 +194,51 @@
   <header class="topbar">
     <div class="brand">
       <span class="dot"></span>
-      <h1>Riftbound — Dépenses</h1>
+      <h1>TCG Expense Tracker</h1>
     </div>
     <div class="topbar-actions">
-      <select id="palette-select" aria-label="Palette de couleurs">
-        <option value="violet">Nexus Violet</option>
-        <option value="ember">Fury Ember</option>
-        <option value="tide">Calm Tide</option>
-        <option value="gold">Order Gold</option>
+      <select id="palette-select" aria-label="Color theme">
+        <option value="fury">Rouge - Fury</option>
+        <option value="body">Orange - Body</option>
+        <option value="mind">Bleu - Mind</option>
+        <option value="calm">Vert - Calm</option>
+        <option value="order">Jaune - Order</option>
+        <option value="chaos">Violet - Chaos</option>
       </select>
       <span class="user-email" id="user-email"></span>
-      <button class="btn-ghost btn-sm" id="logout-btn">Déconnexion</button>
+      <button class="btn-ghost btn-sm" id="logout-btn">Sign out</button>
     </div>
   </header>
 
   <!-- Budget -->
   <section class="card">
-    <h2>Budget du mois</h2>
+    <h2>Monthly budget</h2>
     <div class="budget-row">
       <div class="budget-input-wrap">
-        <label for="budget-input" class="sr-only">Budget mensuel en CHF</label>
+        <label for="budget-input" class="sr-only">Monthly budget in CHF</label>
         <input type="number" id="budget-input" min="0" step="1" placeholder="0">
         <span style="color:var(--text-dim); font-size:0.85rem;">CHF</span>
-        <button class="btn-primary btn-sm" id="budget-save-btn">Enregistrer</button>
+        <button class="btn-primary btn-sm" id="budget-save-btn">Save</button>
       </div>
     </div>
     <div class="progress-track"><div class="progress-fill" id="budget-progress" style="width:0%"></div></div>
     <div class="budget-meta">
-      <span id="budget-spent-lbl">0.00 CHF dépensés</span>
+      <span id="budget-spent-lbl">0.00 CHF spent</span>
       <span id="budget-pct-lbl">0%</span>
     </div>
-    <div class="budget-alert" id="budget-alert">Budget dépassé ce mois-ci.</div>
+    <div class="budget-alert" id="budget-alert">Monthly budget exceeded.</div>
   </section>
 
   <!-- Add expense -->
   <section class="card">
-    <h2>Ajouter une dépense</h2>
+    <h2>Add an expense</h2>
     <form id="expense-form" class="grid-form">
       <div>
-        <label for="exp-category">Catégorie</label>
+        <label for="exp-category">Category</label>
         <select id="exp-category" required></select>
       </div>
       <div>
-        <label for="exp-amount">Montant (CHF)</label>
+        <label for="exp-amount">Amount (CHF)</label>
         <input type="number" id="exp-amount" step="0.05" min="0" required>
       </div>
       <div>
@@ -232,24 +246,24 @@
         <input type="date" id="exp-date" required>
       </div>
       <div>
-        <label for="exp-note">Note (facultatif)</label>
-        <input type="text" id="exp-note" maxlength="120" placeholder="ex. booster OGN">
+        <label for="exp-note">Note (optional)</label>
+        <input type="text" id="exp-note" maxlength="120" placeholder="e.g. booster box">
       </div>
       <div class="full">
-        <button type="submit" class="btn-primary">Ajouter la dépense</button>
+        <button type="submit" class="btn-primary">Add expense</button>
       </div>
     </form>
   </section>
 
   <!-- History -->
   <section class="card">
-    <h2>Historique</h2>
+    <h2>Expense history</h2>
     <div id="expenses-list"></div>
   </section>
 
   <!-- Stats -->
   <section class="card">
-    <h2>Statistiques</h2>
+    <h2>Statistics</h2>
     <div class="stats-grid">
       <div class="chart-wrap">
         <canvas id="chart-donut" width="220" height="220"></canvas>
@@ -258,7 +272,7 @@
       </div>
       <div class="chart-wrap">
         <canvas id="chart-bars" width="320" height="220"></canvas>
-        <div style="font-size:0.75rem; color:var(--text-dim);">Évolution sur 6 mois</div>
+        <div style="font-size:0.75rem; color:var(--text-dim);">Last 6 months</div>
       </div>
     </div>
   </section>
@@ -275,20 +289,26 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const CATEGORIES = [
-    "Display/boosters", "Cartes à l'unité", "Events/Nexus Nights", "Sleeves",
-    "Playmat", "Boîte de rangement", "Bundle", "Autre"
+    "Display/boosters", "Singles", "Events", "Sleeves",
+    "Playmat", "Storage box", "Bundle", "Other"
   ];
   const CATEGORY_COLORS = {
     "Display/boosters": "#8b5cf6",
-    "Cartes à l'unité": "#22b8cf",
-    "Events/Nexus Nights": "#e7bd52",
+    "Singles": "#22b8cf",
+    "Events": "#e7bd52",
     "Sleeves": "#4ade80",
     "Playmat": "#fb7a4a",
-    "Boîte de rangement": "#f472b6",
+    "Storage box": "#f472b6",
     "Bundle": "#60a5fa",
-    "Autre": "#94a3b8"
+    "Other": "#94a3b8"
   };
-  const MONTHS_FR = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  const LEGACY_CATEGORIES = {
+    "Cartes à l'unité": "Singles",
+    "Events/Nexus Nights": "Events",
+    "Boîte de rangement": "Storage box",
+    "Autre": "Other"
+  };
+  const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   // ---------- State ----------
   let session = null;
@@ -318,7 +338,7 @@
   function currentMonthKey(){ return monthKey(todayISO()); }
   function monthLabel(key){
     const [y,m] = key.split("-");
-    return MONTHS_FR[parseInt(m,10)-1] + " " + y.slice(2);
+    return MONTHS_EN[parseInt(m,10)-1] + " " + y.slice(2);
   }
   function showAuthError(msg){
     const el = document.getElementById("auth-error");
@@ -327,25 +347,27 @@
   }
   function translateAuthError(err){
     const m = (err && err.message) || "";
-    if (/Invalid login credentials/i.test(m)) return "Email ou mot de passe incorrect.";
-    if (/User already registered/i.test(m)) return "Un compte existe déjà avec cet email.";
-    if (/Password should be at least/i.test(m)) return "Le mot de passe est trop court (6 caractères minimum).";
-    if (/Unable to validate email/i.test(m) || /invalid email/i.test(m)) return "Adresse email invalide.";
-    if (/rate limit/i.test(m)) return "Trop de tentatives, réessaie dans un instant.";
-    return m || "Une erreur est survenue.";
+    if (/Invalid login credentials/i.test(m)) return "Invalid email or password.";
+    if (/User already registered/i.test(m)) return "An account already exists with this email.";
+    if (/Password should be at least/i.test(m)) return "Password must be at least 6 characters.";
+    if (/Unable to validate email/i.test(m) || /invalid email/i.test(m)) return "Invalid email address.";
+    if (/rate limit/i.test(m)) return "Too many attempts. Please try again shortly.";
+    return m || "Something went wrong.";
   }
 
   // ---------- Palette ----------
+  const LEGACY_PALETTES = { violet:"chaos", ember:"fury", tide:"calm", gold:"order" };
   function applyPalette(name){
+    name = LEGACY_PALETTES[name] || name;
     document.documentElement.setAttribute("data-theme", name);
     document.getElementById("palette-select").value = name;
-    localStorage.setItem("riftbound_palette", name);
+    localStorage.setItem("tcg_tracker_palette", name);
   }
   document.getElementById("palette-select").addEventListener("change", (e)=>{
     applyPalette(e.target.value);
     renderCharts(); // chart bg/gridlines don't depend on theme colors, but keep in sync if changed later
   });
-  applyPalette(localStorage.getItem("riftbound_palette") || "violet");
+  applyPalette(localStorage.getItem("tcg_tracker_palette") || localStorage.getItem("riftbound_palette") || "violet");
 
   // ---------- Category select ----------
   const catSelect = document.getElementById("exp-category");
@@ -367,15 +389,15 @@
     isSignup = !isSignup;
     showAuthError("");
     if (isSignup){
-      authTitle.textContent = "Créer un compte";
-      authSubmit.textContent = "Créer le compte";
-      authToggleText.textContent = "Déjà un compte ?";
-      authToggleBtn.textContent = "Se connecter";
+      authTitle.textContent = "Create an account";
+      authSubmit.textContent = "Create account";
+      authToggleText.textContent = "Already have an account?";
+      authToggleBtn.textContent = "Sign in";
     } else {
-      authTitle.textContent = "Se connecter";
-      authSubmit.textContent = "Se connecter";
-      authToggleText.textContent = "Pas encore de compte ?";
-      authToggleBtn.textContent = "Créer un compte";
+      authTitle.textContent = "Sign in";
+      authSubmit.textContent = "Sign in";
+      authToggleText.textContent = "Don't have an account yet?";
+      authToggleBtn.textContent = "Create an account";
     }
   });
 
@@ -429,7 +451,10 @@
       .order("date", { ascending:false })
       .order("created_at", { ascending:false });
     if (error){ console.error(error); return; }
-    expenses = data || [];
+    expenses = (data || []).map(expense=>({
+      ...expense,
+      category: LEGACY_CATEGORIES[expense.category] || expense.category
+    }));
     renderExpensesList();
     renderBudgetProgress();
     renderCharts();
@@ -461,7 +486,7 @@
     const { error } = await sb.from("expenses").insert({
       user_id: session.user.id, category, amount, date, note: note || null
     });
-    if (error){ alert("Erreur lors de l'ajout : " + error.message); return; }
+    if (error){ alert("Error adding expense: " + error.message); return; }
 
     document.getElementById("exp-amount").value = "";
     document.getElementById("exp-note").value = "";
@@ -470,9 +495,9 @@
   });
 
   async function deleteExpense(id){
-    if (!confirm("Supprimer cette dépense ?")) return;
+    if (!confirm("Delete this expense?")) return;
     const { error } = await sb.from("expenses").delete().eq("id", id);
-    if (error){ alert("Erreur lors de la suppression : " + error.message); return; }
+    if (error){ alert("Error deleting expense: " + error.message); return; }
     await loadExpenses();
   }
 
@@ -484,7 +509,7 @@
     const note = row.querySelector(".edit-note").value.trim();
     if (!(amount > 0) || !date) return;
     const { error } = await sb.from("expenses").update({ category, amount, date, note: note || null }).eq("id", id);
-    if (error){ alert("Erreur lors de la mise à jour : " + error.message); return; }
+    if (error){ alert("Error updating expense: " + error.message); return; }
     editingId = null;
     await loadExpenses();
   }
@@ -504,7 +529,7 @@
       error = res.error;
       if (!error && res.data) input.dataset.rowId = res.data.id;
     }
-    if (error){ alert("Erreur lors de l'enregistrement du budget : " + error.message); return; }
+    if (error){ alert("Error saving budget: " + error.message); return; }
     renderBudgetProgress();
   });
 
@@ -513,7 +538,7 @@
     const container = document.getElementById("expenses-list");
     container.innerHTML = "";
     if (!expenses.length){
-      container.innerHTML = `<div class="empty-state">Aucune dépense enregistrée pour le moment.</div>`;
+      container.innerHTML = `<div class="empty-state">No expenses recorded yet.</div>`;
       return;
     }
     expenses.forEach(exp=>{
@@ -535,7 +560,7 @@
           </div>
           <div class="expense-actions">
             <button class="btn-primary btn-sm" data-action="save">OK</button>
-            <button class="btn-ghost btn-sm" data-action="cancel">Annuler</button>
+            <button class="btn-ghost btn-sm" data-action="cancel">Cancel</button>
           </div>`;
         const sel = row.querySelector(".edit-category");
         CATEGORIES.forEach(c=>{
@@ -556,8 +581,8 @@
           </div>
           <div class="expense-amount">${fmtCHF(exp.amount)}</div>
           <div class="expense-actions">
-            <button class="btn-ghost btn-sm" data-action="edit">Modifier</button>
-            <button class="btn-danger btn-sm" data-action="del">Supprimer</button>
+            <button class="btn-ghost btn-sm" data-action="edit">Edit</button>
+            <button class="btn-danger btn-sm" data-action="del">Delete</button>
           </div>`;
         row.querySelector('[data-action="edit"]').addEventListener("click", ()=>{ editingId = exp.id; renderExpensesList(); });
         row.querySelector('[data-action="del"]').addEventListener("click", ()=>deleteExpense(exp.id));
@@ -578,12 +603,12 @@
     const fill = document.getElementById("budget-progress");
     fill.style.width = Math.min(pct,100) + "%";
     fill.style.background = pct >= 100 ? "var(--danger)" : pct >= 80 ? "var(--warn)" : "var(--accent)";
-    document.getElementById("budget-spent-lbl").textContent = fmtCHF(spent) + " dépensés";
+    document.getElementById("budget-spent-lbl").textContent = fmtCHF(spent) + " spent";
     document.getElementById("budget-pct-lbl").textContent = budgetVal > 0 ? Math.round(pct) + "%" : "—";
     const alertEl = document.getElementById("budget-alert");
     if (budgetVal > 0 && spent > budgetVal){
       alertEl.style.display = "block";
-      alertEl.textContent = `Budget dépassé de ${fmtCHF(spent-budgetVal)} ce mois-ci.`;
+      alertEl.textContent = `Budget exceeded by ${fmtCHF(spent-budgetVal)} this month.`;
     } else {
       alertEl.style.display = "none";
     }
@@ -622,7 +647,7 @@
       ctx.beginPath();
       ctx.arc(size/2, size/2, size/2-10, 0, Math.PI*2);
       ctx.strokeStyle = getCss("--border"); ctx.lineWidth = 18; ctx.stroke();
-      legend.innerHTML = `<div class="empty-state">Pas encore de dépense ce mois-ci.</div>`;
+      legend.innerHTML = `<div class="empty-state">No expenses this month yet.</div>`;
       return;
     }
 
