@@ -1,0 +1,23 @@
+{
+  "name": "TCG Expense Tracker",
+  "short_name": "TCG Expenses",
+  "description": "Track your TCG expenses",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f1012",
+  "theme_color": "#0f1012",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
