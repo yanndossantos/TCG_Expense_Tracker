@@ -5,41 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>TCG Expense Tracker</title>
 <style>
+  :root{
+    --bg:#0f1012; --bg-elevated:#17191c; --bg-card:#1d2024; --border:#2b2f34;
+    --text:#f2f4f6; --text-dim:#9da4ad; --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
+    --warn:#facc15; --success:#4ade80; --accent-border:#45484d; --accent-glow:rgba(255,255,255,.04);
+  }
   :root[data-theme="fury"]{
-    --bg:#190d10; --bg-elevated:#241216; --bg-card:#2d171c; --border:#48232b;
-    --text:#fff0f1; --text-dim:#d2a3aa; --accent:#ef4444; --accent-strong:#dc2626;
-    --accent-soft:rgba(239,68,68,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80; --accent-text:#fff;
+    --accent:#ef4444; --accent-strong:#dc2626; --accent-soft:rgba(239,68,68,.16); --accent-text:#fff;
+    --accent-border:rgba(239,68,68,.42); --accent-glow:rgba(239,68,68,.08);
   }
   :root[data-theme="body"]{
-    --bg:#1b100a; --bg-elevated:#26160d; --bg-card:#301c11; --border:#4a2b1c;
-    --text:#fff3eb; --text-dim:#d5ad96; --accent:#f97316; --accent-strong:#ea580c;
-    --accent-soft:rgba(249,115,22,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80; --accent-text:#fff;
+    --accent:#f97316; --accent-strong:#ea580c; --accent-soft:rgba(249,115,22,.16); --accent-text:#fff;
+    --accent-border:rgba(249,115,22,.42); --accent-glow:rgba(249,115,22,.08);
   }
   :root[data-theme="mind"]{
-    --bg:#0c1424; --bg-elevated:#111e35; --bg-card:#172844; --border:#25416a;
-    --text:#edf5ff; --text-dim:#9db8dc; --accent:#3b82f6; --accent-strong:#2563eb;
-    --accent-soft:rgba(59,130,246,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80; --accent-text:#fff;
+    --accent:#3b82f6; --accent-strong:#2563eb; --accent-soft:rgba(59,130,246,.16); --accent-text:#fff;
+    --accent-border:rgba(59,130,246,.42); --accent-glow:rgba(59,130,246,.08);
   }
   :root[data-theme="calm"]{
-    --bg:#0c1812; --bg-elevated:#11231a; --bg-card:#17301f; --border:#285236;
-    --text:#effcf2; --text-dim:#a4c9ab; --accent:#22c55e; --accent-strong:#16a34a;
-    --accent-soft:rgba(34,197,94,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80; --accent-text:#07130b;
+    --accent:#22c55e; --accent-strong:#16a34a; --accent-soft:rgba(34,197,94,.16); --accent-text:#07130b;
+    --accent-border:rgba(34,197,94,.42); --accent-glow:rgba(34,197,94,.08);
   }
   :root[data-theme="order"]{
-    --bg:#18150a; --bg-elevated:#25200d; --bg-card:#302a12; --border:#4c421d;
-    --text:#fff9e5; --text-dim:#d2c18b; --accent:#eab308; --accent-strong:#ca8a04;
-    --accent-soft:rgba(234,179,8,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80; --accent-text:#171205;
+    --accent:#eab308; --accent-strong:#ca8a04; --accent-soft:rgba(234,179,8,.16); --accent-text:#171205;
+    --accent-border:rgba(234,179,8,.42); --accent-glow:rgba(234,179,8,.08);
   }
   :root[data-theme="chaos"]{
-    --bg:#12101c; --bg-elevated:#181527; --bg-card:#1d1930; --border:#2c2645;
-    --text:#f1eef9; --text-dim:#a79fc4; --accent:#a78bfa; --accent-strong:#8b5cf6;
-    --accent-soft:rgba(167,139,250,.16); --danger:#f87171; --danger-soft:rgba(248,113,113,.16);
-    --warn:#facc15; --success:#4ade80; --accent-text:#0c0a12;
+    --accent:#a78bfa; --accent-strong:#8b5cf6; --accent-soft:rgba(167,139,250,.16); --accent-text:#0c0a12;
+    --accent-border:rgba(167,139,250,.42); --accent-glow:rgba(167,139,250,.08);
   }
 
   * { box-sizing: border-box; }
@@ -81,7 +74,7 @@
   .auth-box {
     width:100%; max-width:380px; background:var(--bg-card);
     border:1px solid var(--border); border-radius:16px; padding:32px 28px;
-    border-top:3px solid var(--accent);
+    border-top:3px solid var(--accent-border);
   }
   .auth-box h1 { font-size:1.5rem; margin-bottom:2px; }
   .auth-sub { color:var(--text-dim); font-size:0.88rem; margin-bottom:24px; }
@@ -105,17 +98,35 @@
   .brand .dot { width:10px; height:10px; border-radius:50%; background:var(--accent); display:inline-block; }
   .brand h1 { font-size:1.2rem; }
   .topbar-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  #palette-select { width:auto; padding:8px 10px; font-size:0.82rem; }
+  #game-select, #palette-select { width:auto; padding:8px 10px; font-size:0.82rem; }
   .user-email { font-size:0.78rem; color:var(--text-dim); }
+  .view-nav { display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+  .nav-btn { background:transparent; color:var(--text-dim); border-radius:8px 8px 0 0; border-bottom:2px solid transparent; padding:10px 14px; }
+  .nav-btn:hover { color:var(--text); }
+  .nav-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .view { display:none; }
+  .view.active { display:block; }
 
   .card {
-    background:var(--bg-card); border:1px solid var(--border); border-radius:14px;
-    padding:20px; margin-bottom:18px; border-left:3px solid var(--accent);
+    background:var(--bg-card); border:1px solid var(--accent-border); border-radius:14px;
+    box-shadow:0 0 0 1px var(--accent-glow), 0 0 12px var(--accent-glow);
+    padding:20px; margin-bottom:18px;
   }
   .card h2 { font-size:1rem; margin-bottom:14px; }
-  .grid-form { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; align-items:end; }
+  .grid-form { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:12px; align-items:end; }
+  .grid-form > div { min-width:0; }
+  #expense-form input, #expense-form select { width:100%; min-width:0; max-width:100%; height:42px; }
+  .grid-form input[type="date"] { -webkit-appearance:none; appearance:none; }
+  .grid-form input[type="date"]::-webkit-calendar-picker-indicator { width:16px; height:16px; margin-left:4px; }
   .grid-form .full { grid-column: 1 / -1; }
-  @media (max-width:680px){ .grid-form { grid-template-columns: 1fr 1fr; } }
+  .grid-form .note-field { grid-column: span 3; }
+  .grid-form .submit-field { grid-column: span 1; }
+  .grid-form .submit-field button { width:100%; height:42px; }
+  @media (max-width:680px){
+    .grid-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #expense-form input, #expense-form select { font-size:16px; }
+    .grid-form .note-field, .grid-form .submit-field { grid-column: span 1; }
+  }
 
   /* Budget */
   .budget-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:12px; }
@@ -134,10 +145,12 @@
     display:grid; grid-template-columns: 90px 1fr 110px 100px; gap:10px; align-items:center;
     padding:10px 0; border-bottom:1px solid var(--border); font-size:0.88rem;
   }
+  .expense-row-view { grid-template-columns:90px 1fr 100px; }
   .expense-row:last-child { border-bottom:none; }
   .expense-cat { display:flex; align-items:center; gap:8px; }
   .cat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   .expense-note { color:var(--text-dim); font-size:0.78rem; }
+  .expense-details .expense-amount { text-align:left; margin-top:4px; }
   .expense-amount { text-align:right; font-weight:700; font-variant-numeric: tabular-nums; }
   .expense-actions { display:flex; gap:6px; justify-content:flex-end; }
   .empty-state { color:var(--text-dim); font-size:0.88rem; text-align:center; padding:20px 0; }
@@ -159,6 +172,24 @@
   .month-total { text-align:center; margin-top:2px; }
   .month-total .num { font-size:1.4rem; font-weight:700; }
   .month-total .lbl { font-size:0.75rem; color:var(--text-dim); }
+  .stats-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+  .stats-heading h2 { margin-bottom:0; }
+  #stats-game-filter { width:auto; min-width:160px; }
+  .stat-kpis { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px; }
+  .stat-kpi { background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:14px; }
+  .stat-kpi .label { color:var(--text-dim); font-size:0.75rem; margin-bottom:5px; }
+  .stat-kpi .value { font-size:1.1rem; font-weight:700; }
+  .game-breakdown { margin-top:20px; border-top:1px solid var(--border); padding-top:16px; }
+  .game-breakdown h3 { font-size:0.9rem; margin-bottom:10px; }
+  .game-total-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
+  .game-total-row:last-child { border-bottom:none; }
+  .game-total-row .name { flex:1; }
+  .game-total-row .amount { font-weight:700; font-variant-numeric:tabular-nums; }
+  @media (max-width:600px){
+    .stat-kpis { grid-template-columns:1fr; }
+    .stats-heading { align-items:stretch; flex-direction:column; }
+    #stats-game-filter { width:100%; }
+  }
 
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
 </style>
@@ -198,84 +229,125 @@
     </div>
     <div class="topbar-actions">
       <select id="palette-select" aria-label="Color theme">
-        <option value="fury">Rouge - Fury</option>
-        <option value="body">Orange - Body</option>
-        <option value="mind">Bleu - Mind</option>
-        <option value="calm">Vert - Calm</option>
-        <option value="order">Jaune - Order</option>
-        <option value="chaos">Violet - Chaos</option>
+        <option value="fury">Fury Red</option>
+        <option value="body">Body Orange</option>
+        <option value="mind">Mind Blue</option>
+        <option value="calm">Calm Green</option>
+        <option value="order">Order Yellow</option>
+        <option value="chaos">Chaos Purple</option>
       </select>
       <span class="user-email" id="user-email"></span>
       <button class="btn-ghost btn-sm" id="logout-btn">Sign out</button>
     </div>
   </header>
 
-  <!-- Budget -->
-  <section class="card">
-    <h2>Monthly budget</h2>
-    <div class="budget-row">
-      <div class="budget-input-wrap">
-        <label for="budget-input" class="sr-only">Monthly budget in CHF</label>
-        <input type="number" id="budget-input" min="0" step="1" placeholder="0">
-        <span style="color:var(--text-dim); font-size:0.85rem;">CHF</span>
-        <button class="btn-primary btn-sm" id="budget-save-btn">Save</button>
-      </div>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="budget-progress" style="width:0%"></div></div>
-    <div class="budget-meta">
-      <span id="budget-spent-lbl">0.00 CHF spent</span>
-      <span id="budget-pct-lbl">0%</span>
-    </div>
-    <div class="budget-alert" id="budget-alert">Monthly budget exceeded.</div>
-  </section>
+  <nav class="view-nav" aria-label="Main navigation">
+    <button class="nav-btn active" data-view="expense-view">+ Add expense</button>
+    <button class="nav-btn" data-view="stats-view">Statistics</button>
+  </nav>
 
-  <!-- Add expense -->
-  <section class="card">
-    <h2>Add an expense</h2>
-    <form id="expense-form" class="grid-form">
-      <div>
-        <label for="exp-category">Category</label>
-        <select id="exp-category" required></select>
+  <main id="expense-view" class="view active">
+    <!-- Budget -->
+    <section class="card">
+      <h2>Monthly budget</h2>
+      <div class="budget-row">
+        <div class="budget-input-wrap">
+          <label for="budget-input" class="sr-only">Monthly budget in CHF</label>
+          <input type="number" id="budget-input" min="0" step="1" placeholder="0">
+          <span style="color:var(--text-dim); font-size:0.85rem;">CHF</span>
+          <button class="btn-primary btn-sm" id="budget-save-btn">Save</button>
+        </div>
       </div>
-      <div>
-        <label for="exp-amount">Amount (CHF)</label>
-        <input type="number" id="exp-amount" step="0.05" min="0" required>
+      <div class="progress-track"><div class="progress-fill" id="budget-progress" style="width:0%"></div></div>
+      <div class="budget-meta">
+        <span id="budget-spent-lbl">0.00 CHF spent</span>
+        <span id="budget-pct-lbl">0%</span>
       </div>
-      <div>
-        <label for="exp-date">Date</label>
-        <input type="date" id="exp-date" required>
-      </div>
-      <div>
-        <label for="exp-note">Note (optional)</label>
-        <input type="text" id="exp-note" maxlength="120" placeholder="e.g. booster box">
-      </div>
-      <div class="full">
-        <button type="submit" class="btn-primary">Add expense</button>
-      </div>
-    </form>
-  </section>
+      <div class="budget-alert" id="budget-alert">Monthly budget exceeded.</div>
+    </section>
 
-  <!-- History -->
-  <section class="card">
-    <h2>Expense history</h2>
-    <div id="expenses-list"></div>
-  </section>
+    <!-- Add expense -->
+    <section class="card">
+      <h2>Add an expense</h2>
+      <form id="expense-form" class="grid-form">
+        <div>
+          <label for="game-select">Game</label>
+          <select id="game-select" required>
+            <option value="riftbound">Riftbound</option>
+            <option value="magic">Magic The Gathering</option>
+            <option value="pokemon">Pokemon</option>
+            <option value="lorcana">Lorcana</option>
+            <option value="one-piece">One Piece</option>
+            <option value="flesh-and-blood">Flesh n Blood</option>
+            <option value="other">Other TCGs</option>
+          </select>
+        </div>
+        <div>
+          <label for="exp-category">Category</label>
+          <select id="exp-category" required></select>
+        </div>
+        <div>
+          <label for="exp-amount">Amount (CHF)</label>
+          <input type="number" id="exp-amount" step="0.05" min="0" required>
+        </div>
+        <div>
+          <label for="exp-date">Date</label>
+          <input type="date" id="exp-date" required>
+        </div>
+        <div class="note-field">
+          <label for="exp-note">Note (optional)</label>
+          <input type="text" id="exp-note" maxlength="120" placeholder="e.g. booster box">
+        </div>
+        <div class="submit-field">
+          <button type="submit" class="btn-primary">Add expense</button>
+        </div>
+      </form>
+    </section>
 
-  <!-- Stats -->
-  <section class="card">
-    <h2>Statistics</h2>
-    <div class="stats-grid">
-      <div class="chart-wrap">
-        <canvas id="chart-donut" width="220" height="220"></canvas>
-        <div class="month-total" id="donut-total"></div>
-        <div class="legend" id="donut-legend"></div>
+    <!-- History -->
+    <section class="card">
+      <h2>Expense history <span id="expense-game-label"></span></h2>
+      <div id="expenses-list"></div>
+    </section>
+  </main>
+
+  <main id="stats-view" class="view">
+    <section class="card">
+      <div class="stats-heading">
+        <h2>Statistics</h2>
+        <select id="stats-game-filter" aria-label="Statistics TCG filter">
+          <option value="all">All TCGs</option>
+          <option value="riftbound">Riftbound</option>
+          <option value="magic">Magic The Gathering</option>
+          <option value="pokemon">Pokemon</option>
+          <option value="lorcana">Lorcana</option>
+          <option value="one-piece">One Piece</option>
+          <option value="flesh-and-blood">Flesh n Blood</option>
+          <option value="other">Other TCGs</option>
+        </select>
       </div>
-      <div class="chart-wrap">
-        <canvas id="chart-bars" width="320" height="220"></canvas>
-        <div style="font-size:0.75rem; color:var(--text-dim);">Last 6 months</div>
+      <div class="stat-kpis">
+        <div class="stat-kpi"><div class="label">This month</div><div class="value" id="stats-month-total">0.00 CHF</div></div>
+        <div class="stat-kpi"><div class="label">All time</div><div class="value" id="stats-all-time-total">0.00 CHF</div></div>
+        <div class="stat-kpi"><div class="label">Expenses</div><div class="value" id="stats-expense-count">0</div></div>
       </div>
-    </div>
-  </section>
+      <div class="stats-grid">
+        <div class="chart-wrap">
+          <canvas id="chart-donut" width="220" height="220"></canvas>
+          <div class="month-total" id="donut-total"></div>
+          <div class="legend" id="donut-legend"></div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart-bars" width="320" height="220"></canvas>
+          <div style="font-size:0.75rem; color:var(--text-dim);">Last 6 months</div>
+        </div>
+      </div>
+      <div class="game-breakdown">
+        <h3>This month by TCG</h3>
+        <div id="game-breakdown-list"></div>
+      </div>
+    </section>
+  </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -292,6 +364,15 @@
     "Display/boosters", "Singles", "Events", "Sleeves",
     "Playmat", "Storage box", "Bundle", "Other"
   ];
+  const GAMES = {
+    riftbound: "Riftbound",
+    magic: "Magic The Gathering",
+    pokemon: "Pokemon",
+    lorcana: "Lorcana",
+    "one-piece": "One Piece",
+    "flesh-and-blood": "Flesh n Blood",
+    other: "Other TCGs"
+  };
   const CATEGORY_COLORS = {
     "Display/boosters": "#8b5cf6",
     "Singles": "#22b8cf",
@@ -315,6 +396,8 @@
   let expenses = [];       // all expenses for the logged in user, newest first
   let editingId = null;
   let isSignup = false;
+  let currentGame = localStorage.getItem("tcg_tracker_game") || "riftbound";
+  let statsGame = localStorage.getItem("tcg_tracker_stats_game") || "all";
 
   // ---------- Helpers ----------
   function fmtCHF(n){
@@ -355,6 +438,16 @@
     return m || "Something went wrong.";
   }
 
+  function setActiveView(viewId){
+    document.querySelectorAll(".view").forEach(view=>{
+      view.classList.toggle("active", view.id === viewId);
+    });
+    document.querySelectorAll("[data-view]").forEach(button=>{
+      button.classList.toggle("active", button.dataset.view === viewId);
+    });
+    if (viewId === "stats-view") renderCharts();
+  }
+
   // ---------- Palette ----------
   const LEGACY_PALETTES = { violet:"chaos", ember:"fury", tide:"calm", gold:"order" };
   function applyPalette(name){
@@ -366,6 +459,26 @@
   document.getElementById("palette-select").addEventListener("change", (e)=>{
     applyPalette(e.target.value);
     renderCharts(); // chart bg/gridlines don't depend on theme colors, but keep in sync if changed later
+  });
+  const gameSelect = document.getElementById("game-select");
+  gameSelect.value = currentGame;
+  gameSelect.addEventListener("change", async (e)=>{
+    currentGame = e.target.value;
+    localStorage.setItem("tcg_tracker_game", currentGame);
+    editingId = null;
+    await loadBudget();
+    renderExpensesList();
+    renderBudgetProgress();
+  });
+  const statsGameFilter = document.getElementById("stats-game-filter");
+  statsGameFilter.value = statsGame;
+  statsGameFilter.addEventListener("change", (e)=>{
+    statsGame = e.target.value;
+    localStorage.setItem("tcg_tracker_stats_game", statsGame);
+    renderCharts();
+  });
+  document.querySelectorAll("[data-view]").forEach(button=>{
+    button.addEventListener("click", ()=>setActiveView(button.dataset.view));
   });
   applyPalette(localStorage.getItem("tcg_tracker_palette") || localStorage.getItem("riftbound_palette") || "violet");
 
@@ -453,6 +566,7 @@
     if (error){ console.error(error); return; }
     expenses = (data || []).map(expense=>({
       ...expense,
+      game: expense.game || "riftbound",
       category: LEGACY_CATEGORIES[expense.category] || expense.category
     }));
     renderExpensesList();
@@ -466,6 +580,7 @@
       .from("budgets")
       .select("*")
       .eq("month", key)
+      .eq("game", currentGame)
       .limit(1);
     if (error){ console.error(error); return; }
     const row = (data && data[0]) || null;
@@ -484,7 +599,7 @@
     if (!(amount > 0) || !date) return;
 
     const { error } = await sb.from("expenses").insert({
-      user_id: session.user.id, category, amount, date, note: note || null
+      user_id: session.user.id, game: currentGame, category, amount, date, note: note || null
     });
     if (error){ alert("Error adding expense: " + error.message); return; }
 
@@ -525,7 +640,7 @@
     if (rowId){
       ({ error } = await sb.from("budgets").update({ amount }).eq("id", rowId));
     } else {
-      const res = await sb.from("budgets").insert({ user_id: session.user.id, month: key, amount }).select().single();
+      const res = await sb.from("budgets").insert({ user_id: session.user.id, game: currentGame, month: key, amount }).select().single();
       error = res.error;
       if (!error && res.data) input.dataset.rowId = res.data.id;
     }
@@ -536,12 +651,14 @@
   // ---------- Rendering: expenses list ----------
   function renderExpensesList(){
     const container = document.getElementById("expenses-list");
+    const visibleExpenses = expenses.filter(exp=>exp.game === currentGame);
+    document.getElementById("expense-game-label").textContent = " - " + (GAMES[currentGame] || "Other TCGs");
     container.innerHTML = "";
-    if (!expenses.length){
+    if (!visibleExpenses.length){
       container.innerHTML = `<div class="empty-state">No expenses recorded yet.</div>`;
       return;
     }
-    expenses.forEach(exp=>{
+    visibleExpenses.forEach(exp=>{
       const row = document.createElement("div");
       row.className = "expense-row";
       row.setAttribute("data-row-id", exp.id);
@@ -573,13 +690,14 @@
         row.querySelector('[data-action="cancel"]').addEventListener("click", ()=>{ editingId = null; renderExpensesList(); });
       } else {
         const color = CATEGORY_COLORS[exp.category] || "#94a3b8";
+        row.classList.add("expense-row-view");
         row.innerHTML = `
           <div style="color:var(--text-dim); font-size:0.82rem;">${fmtDate(exp.date)}</div>
-          <div>
+          <div class="expense-details">
             <div class="expense-cat"><span class="cat-dot" style="background:${color}"></span>${escapeHtml(exp.category)}</div>
             ${exp.note ? `<div class="expense-note">${escapeHtml(exp.note)}</div>` : ""}
+            <div class="expense-amount">${fmtCHF(exp.amount)}</div>
           </div>
-          <div class="expense-amount">${fmtCHF(exp.amount)}</div>
           <div class="expense-actions">
             <button class="btn-ghost btn-sm" data-action="edit">Edit</button>
             <button class="btn-danger btn-sm" data-action="del">Delete</button>
@@ -597,7 +715,7 @@
   // ---------- Rendering: budget ----------
   function renderBudgetProgress(){
     const key = currentMonthKey();
-    const spent = expenses.filter(e=>monthKey(e.date)===key).reduce((s,e)=>s+Number(e.amount),0);
+    const spent = expenses.filter(e=>e.game===currentGame && monthKey(e.date)===key).reduce((s,e)=>s+Number(e.amount),0);
     const budgetVal = parseFloat(document.getElementById("budget-input").value) || 0;
     const pct = budgetVal > 0 ? Math.min((spent/budgetVal)*100, 999) : 0;
     const fill = document.getElementById("budget-progress");
@@ -616,8 +734,47 @@
 
   // ---------- Rendering: charts ----------
   function renderCharts(){
+    renderStatSummary();
     renderDonut();
     renderBars();
+    renderGameBreakdown();
+  }
+
+  function getStatsExpenses(){
+    return statsGame === "all" ? expenses : expenses.filter(e=>e.game===statsGame);
+  }
+
+  function renderStatSummary(){
+    const selectedExpenses = getStatsExpenses();
+    const key = currentMonthKey();
+    const monthTotal = selectedExpenses.filter(e=>monthKey(e.date)===key).reduce((s,e)=>s+Number(e.amount),0);
+    const allTimeTotal = selectedExpenses.reduce((s,e)=>s+Number(e.amount),0);
+    document.getElementById("stats-month-total").textContent = fmtCHF(monthTotal);
+    document.getElementById("stats-all-time-total").textContent = fmtCHF(allTimeTotal);
+    document.getElementById("stats-expense-count").textContent = String(selectedExpenses.length);
+  }
+
+  function renderGameBreakdown(){
+    const container = document.getElementById("game-breakdown-list");
+    const key = currentMonthKey();
+    const totals = {};
+    expenses.filter(e=>monthKey(e.date)===key).forEach(e=>{
+      totals[e.game] = (totals[e.game] || 0) + Number(e.amount);
+    });
+    const entries = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    container.innerHTML = "";
+    if (!entries.length){
+      container.innerHTML = `<div class="empty-state">No expenses this month yet.</div>`;
+      return;
+    }
+    entries.forEach(([game, total])=>{
+      const row = document.createElement("div");
+      row.className = "game-total-row";
+      row.innerHTML = `<span class="cat-dot" style="background:var(--accent)"></span>
+        <span class="name">${escapeHtml(GAMES[game] || "Other TCGs")}</span>
+        <span class="amount">${fmtCHF(total)}</span>`;
+      container.appendChild(row);
+    });
   }
 
   function renderDonut(){
@@ -632,7 +789,7 @@
     const key = currentMonthKey();
     const totals = {};
     let grandTotal = 0;
-    expenses.filter(e=>monthKey(e.date)===key).forEach(e=>{
+    getStatsExpenses().filter(e=>monthKey(e.date)===key).forEach(e=>{
       totals[e.category] = (totals[e.category]||0) + Number(e.amount);
       grandTotal += Number(e.amount);
     });
@@ -692,7 +849,8 @@
       const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
       keys.push(d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0"));
     }
-    const totals = keys.map(k=>expenses.filter(e=>monthKey(e.date)===k).reduce((s,e)=>s+Number(e.amount),0));
+    const selectedExpenses = getStatsExpenses();
+    const totals = keys.map(k=>selectedExpenses.filter(e=>monthKey(e.date)===k).reduce((s,e)=>s+Number(e.amount),0));
     const max = Math.max(...totals, 1);
 
     const padL = 8, padB = 26, padT = 14, padR = 8;
