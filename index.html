@@ -199,7 +199,19 @@
   .month-total .lbl { font-size:0.75rem; color:var(--text-dim); }
   .stats-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
   .stats-heading h2 { margin-bottom:0; }
+  .stats-filters { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
   #stats-game-filter { width:auto; min-width:160px; }
+  .stats-segmented { display:flex; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:3px; gap:2px; }
+  .stats-segment { background:transparent; color:var(--text-dim); border-radius:6px; padding:7px 9px; font-size:0.78rem; white-space:nowrap; }
+  .stats-segment:hover { color:var(--text); }
+  .stats-segment.active { background:var(--accent); color:var(--accent-text); }
+  .stats-period-nav { display:flex; align-items:center; gap:0; min-width:190px; justify-content:center; }
+  .stats-period-nav button { position:relative; width:34px; height:42px; padding:0; border-radius:6px; background:transparent; color:var(--accent); border:1px solid transparent; font-size:0; }
+  .stats-period-nav button::before { content:""; position:absolute; top:10px; width:20px; height:20px; border-color:currentColor; border-style:solid; }
+  #stats-period-prev::before { left:8px; border-width:0 0 3px 3px; transform:rotate(45deg); }
+  #stats-period-next::before { right:8px; border-width:3px 3px 0 0; transform:rotate(45deg); }
+  .stats-period-nav button:hover { background:var(--accent-soft); border-color:var(--accent-border); }
+  .stats-period-label { min-width:88px; text-align:center; color:var(--text); font-size:0.95rem; font-weight:700; font-variant-numeric:tabular-nums; }
   .stat-kpis { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px; }
   .stat-kpi { background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:14px; }
   .stat-kpi .label { color:var(--text-dim); font-size:0.75rem; margin-bottom:5px; }
@@ -213,7 +225,11 @@
   @media (max-width:600px){
     .stat-kpis { grid-template-columns:1fr; }
     .stats-heading { align-items:stretch; flex-direction:column; }
-    #stats-game-filter { width:100%; }
+    .stats-filters { display:grid; grid-template-columns:1fr 1fr; }
+    #stats-game-filter, .stats-segmented { width:100%; min-width:0; }
+    #stats-game-filter { grid-column:1 / -1; }
+    .stats-segment { flex:1; padding-left:5px; padding-right:5px; }
+    .stats-period-nav { grid-column:1 / -1; }
   }
 
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
@@ -278,7 +294,7 @@
       <div class="budget-row">
         <div class="budget-input-wrap">
           <label for="budget-input" class="sr-only">Monthly budget in CHF</label>
-          <input type="number" id="budget-input" min="0" step="1" placeholder="0">
+          <input type="text" id="budget-input" inputmode="decimal" pattern="[0-9]+([.,][0-9]{1,2})?" placeholder="0,00">
           <span style="color:var(--text-dim); font-size:0.85rem;">CHF</span>
           <button class="btn-primary btn-sm" id="budget-save-btn">Save</button>
         </div>
@@ -313,7 +329,7 @@
         </div>
         <div>
           <label for="exp-amount">Amount (CHF)</label>
-          <input type="number" id="exp-amount" step="0.05" min="0" required>
+          <input type="text" id="exp-amount" inputmode="decimal" pattern="[0-9]+([.,][0-9]{1,2})?" placeholder="0,00" required>
         </div>
         <div>
           <label for="exp-date">Date</label>
@@ -340,16 +356,28 @@
     <section class="card">
       <div class="stats-heading">
         <h2>Statistics</h2>
-        <select id="stats-game-filter" aria-label="Statistics TCG filter">
-          <option value="all">All TCGs</option>
-          <option value="riftbound">Riftbound</option>
-          <option value="magic">Magic The Gathering</option>
-          <option value="pokemon">Pokemon</option>
-          <option value="lorcana">Lorcana</option>
-          <option value="one-piece">One Piece</option>
-          <option value="flesh-and-blood">Flesh n Blood</option>
-          <option value="other">Other TCGs</option>
-        </select>
+        <div class="stats-filters">
+          <select id="stats-game-filter" aria-label="Statistics TCG filter">
+            <option value="all">All TCGs</option>
+            <option value="riftbound">Riftbound</option>
+            <option value="magic">Magic The Gathering</option>
+            <option value="pokemon">Pokemon</option>
+            <option value="lorcana">Lorcana</option>
+            <option value="one-piece">One Piece</option>
+            <option value="flesh-and-blood">Flesh n Blood</option>
+            <option value="other">Other TCGs</option>
+          </select>
+          <div class="stats-period-nav" aria-label="Statistics period">
+            <button type="button" id="stats-period-prev" aria-label="Previous period">&lt;</button>
+            <span class="stats-period-label" id="stats-period-label"></span>
+            <button type="button" id="stats-period-next" aria-label="Next period">&gt;</button>
+          </div>
+          <div class="stats-segmented" role="group" aria-label="Statistics granularity">
+            <button type="button" class="stats-segment" data-stats-granularity="week">Week</button>
+            <button type="button" class="stats-segment" data-stats-granularity="month">Month</button>
+            <button type="button" class="stats-segment" data-stats-granularity="year">Year</button>
+          </div>
+        </div>
       </div>
       <div class="stat-kpis">
         <div class="stat-kpi"><div class="label">This month</div><div class="value" id="stats-month-total">0.00 CHF</div></div>
@@ -364,7 +392,7 @@
         </div>
         <div class="chart-wrap">
           <canvas id="chart-bars" width="320" height="220"></canvas>
-          <div style="font-size:0.75rem; color:var(--text-dim);">Last 6 months</div>
+          <div id="bars-label" style="font-size:0.75rem; color:var(--text-dim);">This year by month</div>
         </div>
       </div>
       <div class="game-breakdown">
@@ -415,6 +443,7 @@
     "Autre": "Other"
   };
   const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // ---------- State ----------
   let session = null;
@@ -423,6 +452,8 @@
   let isSignup = false;
   let currentGame = localStorage.getItem("tcg_tracker_game") || "riftbound";
   let statsGame = localStorage.getItem("tcg_tracker_stats_game") || "all";
+  let statsCursor = localStorage.getItem("tcg_tracker_stats_cursor") || todayISO();
+  let statsGranularity = localStorage.getItem("tcg_tracker_stats_granularity") || "month";
 
   // ---------- Helpers ----------
   function fmtCHF(n){
@@ -433,6 +464,10 @@
     if (neg) intPart = intPart.slice(1);
     intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "\u2019");
     return (neg ? "-" : "") + intPart + "." + parts[1] + " CHF";
+  }
+  function parseAmount(value){
+    const normalized = String(value).trim().replace(",", ".");
+    return /^\d+(\.\d{1,2})?$/.test(normalized) ? Number(normalized) : NaN;
   }
   function fmtDate(iso){
     const [y,m,d] = iso.split("-");
@@ -502,6 +537,25 @@
     localStorage.setItem("tcg_tracker_stats_game", statsGame);
     renderCharts();
   });
+  document.getElementById("stats-period-prev").addEventListener("click", ()=>changeStatsPeriod(-1));
+  document.getElementById("stats-period-next").addEventListener("click", ()=>changeStatsPeriod(1));
+  document.querySelectorAll("[data-stats-granularity]").forEach(button=>{
+    button.setAttribute("aria-pressed", button.dataset.statsGranularity === statsGranularity ? "true" : "false");
+    button.classList.toggle("active", button.dataset.statsGranularity === statsGranularity);
+    button.addEventListener("click", ()=>{
+      statsGranularity = button.dataset.statsGranularity;
+      localStorage.setItem("tcg_tracker_stats_granularity", statsGranularity);
+      updateStatsControls();
+      renderCharts();
+    });
+  });
+  function updateStatsControls(){
+    document.querySelectorAll("[data-stats-granularity]").forEach(button=>{
+      const isActive = button.dataset.statsGranularity === statsGranularity;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  }
   document.querySelectorAll("[data-view]").forEach(button=>{
     button.addEventListener("click", ()=>setActiveView(button.dataset.view));
   });
@@ -618,7 +672,7 @@
   document.getElementById("expense-form").addEventListener("submit", async (e)=>{
     e.preventDefault();
     const category = document.getElementById("exp-category").value;
-    const amount = parseFloat(document.getElementById("exp-amount").value);
+    const amount = parseAmount(document.getElementById("exp-amount").value);
     const date = document.getElementById("exp-date").value;
     const note = document.getElementById("exp-note").value.trim();
     if (!(amount > 0) || !date) return;
@@ -644,7 +698,7 @@
   async function saveEditedExpense(id){
     const row = document.querySelector(`[data-row-id="${id}"]`);
     const category = row.querySelector(".edit-category").value;
-    const amount = parseFloat(row.querySelector(".edit-amount").value);
+    const amount = parseAmount(row.querySelector(".edit-amount").value);
     const date = row.querySelector(".edit-date").value;
     const note = row.querySelector(".edit-note").value.trim();
     if (!(amount > 0) || !date) return;
@@ -657,7 +711,7 @@
   // ---------- Budget save ----------
   document.getElementById("budget-save-btn").addEventListener("click", async ()=>{
     const input = document.getElementById("budget-input");
-    const amount = parseFloat(input.value);
+    const amount = parseAmount(input.value);
     if (!(amount >= 0)) return;
     const key = currentMonthKey();
     const rowId = input.dataset.rowId;
@@ -698,7 +752,7 @@
             <input type="text" class="edit-note" value="${exp.note ? escapeHtml(exp.note) : ""}" placeholder="Note" style="margin-top:6px;">
           </div>
           <div>
-            <input type="number" class="edit-amount" step="0.05" min="0" value="${exp.amount}">
+            <input type="text" class="edit-amount" inputmode="decimal" pattern="[0-9]+([.,][0-9]{1,2})?" value="${exp.amount}">
           </div>
           <div class="expense-actions">
             <button class="btn-primary btn-sm" data-action="save">OK</button>
@@ -741,7 +795,7 @@
   function renderBudgetProgress(){
     const key = currentMonthKey();
     const spent = expenses.filter(e=>e.game===currentGame && monthKey(e.date)===key).reduce((s,e)=>s+Number(e.amount),0);
-    const budgetVal = parseFloat(document.getElementById("budget-input").value) || 0;
+    const budgetVal = parseAmount(document.getElementById("budget-input").value) || 0;
     const pct = budgetVal > 0 ? Math.min((spent/budgetVal)*100, 999) : 0;
     const fill = document.getElementById("budget-progress");
     fill.style.width = Math.min(pct,100) + "%";
@@ -767,6 +821,77 @@
 
   function getStatsExpenses(){
     return statsGame === "all" ? expenses : expenses.filter(e=>e.game===statsGame);
+  }
+
+  function dateFromISO(iso){
+    const [year, month, day] = iso.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+  function isoDate(date){
+    return date.getFullYear() + "-" + String(date.getMonth()+1).padStart(2,"0") + "-" + String(date.getDate()).padStart(2,"0");
+  }
+  function startOfWeek(date){
+    const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const day = result.getDay();
+    result.setDate(result.getDate() - (day === 0 ? 6 : day - 1));
+    return result;
+  }
+  function changeStatsPeriod(amount){
+    const cursor = dateFromISO(statsCursor);
+    if (statsGranularity === "year") cursor.setFullYear(cursor.getFullYear() + amount);
+    else if (statsGranularity === "month") cursor.setMonth(cursor.getMonth() + amount);
+    else cursor.setDate(cursor.getDate() + amount * 7);
+    statsCursor = isoDate(cursor);
+    localStorage.setItem("tcg_tracker_stats_cursor", statsCursor);
+    renderCharts();
+  }
+  function statsPeriodBounds(){
+    const cursor = dateFromISO(statsCursor);
+    if (statsGranularity === "year"){
+      return { start: new Date(cursor.getFullYear(), 0, 1), end: new Date(cursor.getFullYear(), 11, 31) };
+    }
+    if (statsGranularity === "month"){
+      return { start: new Date(cursor.getFullYear(), cursor.getMonth(), 1), end: new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0) };
+    }
+    const start = startOfWeek(cursor);
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+    return { start, end };
+  }
+  function periodBounds(){
+    return statsPeriodBounds();
+  }
+  function chartBuckets(){
+    const { start, end } = periodBounds();
+    const keys = [];
+    if (statsGranularity === "year"){
+      for (let date = new Date(start.getFullYear(), 0, 1); date <= end; date.setMonth(date.getMonth() + 1)){
+        keys.push(date.getFullYear() + "-" + String(date.getMonth()+1).padStart(2,"0"));
+      }
+    } else if (statsGranularity === "month"){
+      for (let date = startOfWeek(start); date <= end; date.setDate(date.getDate() + 7)) keys.push(isoDate(date));
+    } else {
+      for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) keys.push(isoDate(date));
+    }
+    return keys;
+  }
+  function expenseBucket(expense){
+    if (statsGranularity === "year") return monthKey(expense.date);
+    if (statsGranularity === "month") return isoDate(startOfWeek(dateFromISO(expense.date)));
+    return expense.date;
+  }
+  function chartBucketLabel(key){
+    if (statsGranularity === "year") return monthLabel(key).split(" ")[0];
+    if (statsGranularity === "month"){
+      const date = dateFromISO(key);
+      return String(date.getDate()).padStart(2,"0") + "/" + String(date.getMonth()+1).padStart(2,"0");
+    }
+    return DAYS_EN[dateFromISO(key).getDay()];
+  }
+  function statsPeriodLabel(){
+    const { start, end } = statsPeriodBounds();
+    if (statsGranularity === "year") return String(start.getFullYear());
+    if (statsGranularity === "month") return MONTHS_EN[start.getMonth()] + " " + start.getFullYear();
+    return `${String(start.getDate()).padStart(2,"0")} - ${String(end.getDate()).padStart(2,"0")} ${MONTHS_EN[end.getMonth()]} ${end.getFullYear()}`;
   }
 
   function renderStatSummary(){
@@ -867,15 +992,12 @@
     ctx.scale(dpr,dpr);
     ctx.clearRect(0,0,w,h);
 
-    // last 6 months keys, oldest first
-    const now = new Date();
-    const keys = [];
-    for (let i=5; i>=0; i--){
-      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-      keys.push(d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0"));
-    }
-    const selectedExpenses = getStatsExpenses();
-    const totals = keys.map(k=>selectedExpenses.filter(e=>monthKey(e.date)===k).reduce((s,e)=>s+Number(e.amount),0));
+    const keys = chartBuckets();
+    const bounds = periodBounds();
+    const rangeStart = isoDate(bounds.start);
+    const rangeEnd = isoDate(bounds.end);
+    const selectedExpenses = getStatsExpenses().filter(expense=>expense.date >= rangeStart && expense.date <= rangeEnd);
+    const totals = keys.map(k=>selectedExpenses.filter(e=>expenseBucket(e)===k).reduce((s,e)=>s+Number(e.amount),0));
     const max = Math.max(...totals, 1);
 
     const padL = 8, padB = 26, padT = 14, padR = 8;
@@ -890,12 +1012,13 @@
       ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+chartW, y); ctx.stroke();
     }
 
+    const selectedBucket = expenseBucket({ date: statsCursor });
     keys.forEach((k, i)=>{
       const val = totals[i];
       const barH = max > 0 ? (val/max)*chartH : 0;
       const x = padL + gap*i + (gap-barW)/2;
       const y = padT + chartH - barH;
-      const isCurrent = k === currentMonthKey();
+      const isCurrent = k === selectedBucket;
       ctx.fillStyle = isCurrent ? getCss("--accent-strong") : getCss("--accent");
       ctx.globalAlpha = isCurrent ? 1 : 0.55;
       roundRect(ctx, x, y, barW, Math.max(barH,2), 4);
@@ -905,8 +1028,14 @@
       ctx.fillStyle = getCss("--text-dim");
       ctx.font = "11px ui-sans-serif, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(monthLabel(k).split(" ")[0], x + barW/2, h - 8);
+      const labelStep = Math.max(1, Math.ceil(keys.length / 12));
+      if (i % labelStep === 0 || i === keys.length - 1){
+        ctx.fillText(chartBucketLabel(k), x + barW/2, h - 8);
+      }
     });
+    const granularityLabels = { month:"month", week:"week", year:"year" };
+    document.getElementById("stats-period-label").textContent = statsPeriodLabel();
+    document.getElementById("bars-label").textContent = `${statsPeriodLabel()} by ${granularityLabels[statsGranularity]}`;
   }
 
   function roundRect(ctx,x,y,w,h,r){
