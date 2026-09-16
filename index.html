@@ -121,7 +121,10 @@
   .grid-form .full { grid-column: 1 / -1; }
   .grid-form .note-field { grid-column: span 3; }
   .grid-form .submit-field { grid-column: span 1; }
-  .grid-form .submit-field button { width:100%; height:42px; }
+  .grid-form .submit-field button {
+    width:100%; height:42px; padding:10px 12px; box-sizing:border-box;
+    border:1px solid var(--accent-border); font-size:0.95rem;
+  }
   @media (max-width:680px){
     .grid-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     #expense-form input, #expense-form select { font-size:16px; }
@@ -158,6 +161,21 @@
     .expense-row { grid-template-columns: 1fr; grid-template-rows:auto auto auto; row-gap:6px; }
     .expense-amount { text-align:left; }
     .expense-actions { justify-content:flex-start; }
+    .expense-row-view {
+      grid-template-columns:minmax(0, 1fr) auto;
+      grid-template-rows:auto auto;
+      column-gap:10px;
+      row-gap:6px;
+      align-items:start;
+    }
+    .expense-row-view > :first-child { grid-column:1 / -1; }
+    .expense-row-view .expense-details { grid-column:1; }
+    .expense-row-view .expense-actions {
+      grid-column:2;
+      grid-row:2;
+      align-self:center;
+      justify-content:flex-end;
+    }
   }
 
   /* Stats */
