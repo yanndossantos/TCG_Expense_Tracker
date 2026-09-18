@@ -416,7 +416,7 @@
 
   const CATEGORIES = [
     "Display/boosters", "Singles", "Events", "Sleeves",
-    "Playmat", "Storage box", "Bundle", "Other"
+    "Playmat", "Storage box", "Bundle", "Accessories", "Other"
   ];
   const GAMES = {
     riftbound: "Riftbound",
@@ -435,6 +435,7 @@
     "Playmat": "#fb7a4a",
     "Storage box": "#f472b6",
     "Bundle": "#60a5fa",
+    "Accessories": "#f59e0b",
     "Other": "#94a3b8"
   };
   const LEGACY_CATEGORIES = {
@@ -564,11 +565,17 @@
 
   // ---------- Category select ----------
   const catSelect = document.getElementById("exp-category");
-  CATEGORIES.forEach(c=>{
-    const opt = document.createElement("option");
-    opt.value = c; opt.textContent = c;
-    catSelect.appendChild(opt);
-  });
+  function populateCategorySelect(select, selectedCategory){
+    select.innerHTML = "";
+    CATEGORIES.forEach(category=>{
+      const opt = document.createElement("option");
+      opt.value = category;
+      opt.textContent = category;
+      opt.selected = category === selectedCategory;
+      select.appendChild(opt);
+    });
+  }
+  populateCategorySelect(catSelect);
   document.getElementById("exp-date").value = todayISO();
 
   // ---------- Auth flow ----------
@@ -696,17 +703,25 @@
     await loadExpenses();
   }
 
-  async function saveEditedExpense(id){
-    const row = document.querySelector(`[data-row-id="${id}"]`);
+  async function saveEditedExpense(id, row){
+    if (!row) return;
     const category = row.querySelector(".edit-category").value;
     const amount = parseAmount(row.querySelector(".edit-amount").value);
     const date = row.querySelector(".edit-date").value;
     const note = row.querySelector(".edit-note").value.trim();
     if (!(amount > 0) || !date) return;
-    const { error } = await sb.from("expenses").update({ category, amount, date, note: note || null }).eq("id", id);
+    const { error } = await sb
+      .from("expenses")
+      .update({ category, amount, date, note: note || null })
+      .eq("id", id)
+      .eq("user_id", session.user.id);
     if (error){ alert("Error updating expense: " + error.message); return; }
     editingId = null;
     await loadExpenses();
+    const updatedExpense = expenses.find(expense=>expense.id === id);
+    if (!updatedExpense || updatedExpense.category !== category){
+      alert("Expense could not be updated. Please check your Supabase update policy.");
+    }
   }
 
   // ---------- Budget save ----------
@@ -759,14 +774,8 @@
             <button class="btn-primary btn-sm" data-action="save">OK</button>
             <button class="btn-ghost btn-sm" data-action="cancel">Cancel</button>
           </div>`;
-        const sel = row.querySelector(".edit-category");
-        CATEGORIES.forEach(c=>{
-          const opt = document.createElement("option");
-          opt.value = c; opt.textContent = c;
-          if (c === exp.category) opt.selected = true;
-          sel.appendChild(opt);
-        });
-        row.querySelector('[data-action="save"]').addEventListener("click", ()=>saveEditedExpense(exp.id));
+        populateCategorySelect(row.querySelector(".edit-category"), exp.category);
+        row.querySelector('[data-action="save"]').addEventListener("click", ()=>saveEditedExpense(exp.id, row));
         row.querySelector('[data-action="cancel"]').addEventListener("click", ()=>{ editingId = null; renderExpensesList(); });
       } else {
         const color = CATEGORY_COLORS[exp.category] || "#94a3b8";
