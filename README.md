@@ -23,3 +23,18 @@ with check (auth.uid() = user_id);
 ```
 
 Existing records are automatically assigned to `riftbound`. The page currently offers `Riftbound` and `Other TCG`; add more options in `index.html` when needed.
+
+## Keeping Supabase active
+
+The repository includes a scheduled GitHub Actions workflow that queries Supabase once
+per day to prevent the free project database from becoming inactive:
+[`.github/workflows/keep-supabase-awake.yml`](.github/workflows/keep-supabase-awake.yml).
+
+Add these repository secrets in **Settings > Secrets and variables > Actions**:
+
+- `SUPABASE_URL`: the project URL, for example `https://your-project.supabase.co`
+- `SUPABASE_ANON_KEY`: the project's publishable/anonymous key
+
+The workflow can also be run manually from the **Actions** tab. It intentionally uses
+the anonymous key and a read-only request; Row Level Security may return no rows, but
+the request still validates that the API and database are reachable.
