@@ -24,6 +24,25 @@ with check (auth.uid() = user_id);
 
 Existing records are automatically assigned to `riftbound`. The page currently offers `Riftbound` and `Other TCG`; add more options in `index.html` when needed.
 
+## Sales migration
+
+Sales and expenses share the `expenses` table. Run this once in the Supabase SQL editor
+before deploying the sales feature:
+
+```sql
+alter table public.expenses
+  add column if not exists type text not null default 'expense';
+
+alter table public.expenses
+  drop constraint if exists expenses_type_check;
+
+alter table public.expenses
+  add constraint expenses_type_check check (type in ('expense', 'sale'));
+```
+
+Existing rows remain expenses. Sales are stored with `type = 'sale'` and are included
+as positive amounts in the net balance.
+
 ## Keeping Supabase active
 
 The repository includes a scheduled GitHub Actions workflow that queries Supabase once

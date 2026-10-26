@@ -216,12 +216,28 @@
   .stat-kpi { background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:14px; }
   .stat-kpi .label { color:var(--text-dim); font-size:0.75rem; margin-bottom:5px; }
   .stat-kpi .value { font-size:1.1rem; font-weight:700; }
+  .stat-kpi.expense .value { color:var(--danger); }
+  .stat-kpi.sale .value { color:var(--success); }
+  .stat-kpi.net .value { color:var(--accent); }
   .game-breakdown { margin-top:20px; border-top:1px solid var(--border); padding-top:16px; }
   .game-breakdown h3 { font-size:0.9rem; margin-bottom:10px; }
-  .game-total-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
+  .stats-chart-legend { display:flex; gap:14px; flex-wrap:wrap; width:100%; justify-content:center; color:var(--text-dim); font-size:0.78rem; }
+  .stats-chart-legend span { display:flex; align-items:center; gap:5px; }
+  .stats-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .stats-dot.expense { background:var(--danger); }
+  .stats-dot.sale { background:var(--success); }
+  .game-total-row { display:grid; grid-template-columns:minmax(0, 1fr) repeat(3, auto); align-items:center; gap:14px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.82rem; }
   .game-total-row:last-child { border-bottom:none; }
   .game-total-row .name { flex:1; }
-  .game-total-row .amount { font-weight:700; font-variant-numeric:tabular-nums; }
+  .game-total-row .amount { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .game-total-row .amount.expense { color:var(--danger); }
+  .game-total-row .amount.sale { color:var(--success); }
+  .game-total-row .amount.net { color:var(--accent); }
+  .game-detail-row { display:grid; grid-template-columns:90px 70px minmax(0,1fr) auto; align-items:center; gap:10px; padding:7px 0 7px 14px; border-bottom:1px solid var(--border); font-size:0.78rem; color:var(--text-dim); }
+  .game-detail-row .type { font-weight:600; }
+  .game-detail-row .type.expense { color:var(--danger); }
+  .game-detail-row .type.sale { color:var(--success); }
+  .game-detail-row .amount { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
   @media (max-width:600px){
     .stat-kpis { grid-template-columns:1fr; }
     .stats-heading { align-items:stretch; flex-direction:column; }
@@ -231,6 +247,10 @@
     .stats-segment { flex:1; padding-left:5px; padding-right:5px; }
     .stats-period-nav { grid-column:auto; min-width:0; }
     .stats-period-label { min-width:0; }
+    .game-total-row { grid-template-columns:1fr 1fr; gap:5px 10px; }
+    .game-total-row .name { grid-column:1 / -1; }
+    .game-detail-row { grid-template-columns:70px 1fr auto; padding-left:8px; }
+    .game-detail-row .date { display:none; }
   }
 
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
@@ -284,7 +304,8 @@
   </header>
 
   <nav class="view-nav" aria-label="Main navigation">
-    <button class="nav-btn active" data-view="expense-view">+ Add expense</button>
+    <button class="nav-btn active" data-view="expense-view" data-transaction-type="expense">Expenses</button>
+    <button class="nav-btn" data-view="expense-view" data-transaction-type="sale">Sales</button>
     <button class="nav-btn" data-view="stats-view">Statistics</button>
   </nav>
 
@@ -302,15 +323,15 @@
       </div>
       <div class="progress-track"><div class="progress-fill" id="budget-progress" style="width:0%"></div></div>
       <div class="budget-meta">
-        <span id="budget-spent-lbl">0.00 CHF spent</span>
+        <span id="budget-spent-lbl">0.00 CHF net balance</span>
         <span id="budget-pct-lbl">0%</span>
       </div>
       <div class="budget-alert" id="budget-alert">Monthly budget exceeded.</div>
     </section>
 
-    <!-- Add expense -->
+    <!-- Expenses and sales -->
     <section class="card">
-      <h2>Add an expense</h2>
+      <h2 id="transaction-form-title">Add an expense</h2>
       <form id="expense-form" class="grid-form">
         <div>
           <label for="game-select">Game</label>
@@ -341,14 +362,14 @@
           <input type="text" id="exp-note" maxlength="120" placeholder="e.g. booster box">
         </div>
         <div class="submit-field">
-          <button type="submit" class="btn-primary">Add expense</button>
+          <button type="submit" class="btn-primary" id="transaction-submit">Add expense</button>
         </div>
       </form>
     </section>
 
     <!-- History -->
     <section class="card">
-      <h2>Expense history <span id="expense-game-label"></span></h2>
+      <h2><span id="transaction-history-title">Expense history</span> <span id="expense-game-label"></span></h2>
       <div id="expenses-list"></div>
     </section>
   </main>
@@ -381,14 +402,18 @@
         </div>
       </div>
       <div class="stat-kpis">
-        <div class="stat-kpi"><div class="label">This month</div><div class="value" id="stats-month-total">0.00 CHF</div></div>
-        <div class="stat-kpi"><div class="label">All time</div><div class="value" id="stats-all-time-total">0.00 CHF</div></div>
-        <div class="stat-kpi"><div class="label">Expenses</div><div class="value" id="stats-expense-count">0</div></div>
+        <div class="stat-kpi expense"><div class="label">Purchases</div><div class="value" id="stats-expense-total">0.00 CHF</div></div>
+        <div class="stat-kpi sale"><div class="label">Sales</div><div class="value" id="stats-sale-total">0.00 CHF</div></div>
+        <div class="stat-kpi net"><div class="label">Net result</div><div class="value" id="stats-net-total">0.00 CHF</div></div>
       </div>
       <div class="stats-grid">
         <div class="chart-wrap">
           <canvas id="chart-donut" width="220" height="220"></canvas>
           <div class="month-total" id="donut-total"></div>
+          <div class="stats-chart-legend">
+            <span><i class="stats-dot expense"></i>Purchases</span>
+            <span><i class="stats-dot sale"></i>Sales</span>
+          </div>
           <div class="legend" id="donut-legend"></div>
         </div>
         <div class="chart-wrap">
@@ -397,7 +422,10 @@
         </div>
       </div>
       <div class="game-breakdown">
-        <h3>This month by TCG</h3>
+        <h3 id="game-breakdown-title">This period by TCG</h3>
+        <div class="game-total-row" style="color:var(--text-dim); border-bottom:1px solid var(--border);">
+          <span>TCG</span><span>Purchases</span><span>Sales</span><span>Net</span>
+        </div>
         <div id="game-breakdown-list"></div>
       </div>
     </section>
@@ -453,6 +481,7 @@
   let editingId = null;
   let isSignup = false;
   let currentGame = localStorage.getItem("tcg_tracker_game") || "riftbound";
+  let currentTransactionType = "expense";
   let statsGame = localStorage.getItem("tcg_tracker_stats_game") || "all";
   let statsCursor = localStorage.getItem("tcg_tracker_stats_cursor") || todayISO();
   let statsGranularity = localStorage.getItem("tcg_tracker_stats_granularity") || "month";
@@ -485,6 +514,10 @@
     const [y,m] = key.split("-");
     return MONTHS_EN[parseInt(m,10)-1] + " " + y.slice(2);
   }
+  function signedAmount(transaction){
+    const amount = Number(transaction.amount) || 0;
+    return transaction.type === "sale" ? amount : -amount;
+  }
   function showAuthError(msg){
     const el = document.getElementById("auth-error");
     el.textContent = msg;
@@ -500,14 +533,28 @@
     return m || "Something went wrong.";
   }
 
-  function setActiveView(viewId){
+  function setActiveView(viewId, transactionType){
+    if (transactionType) currentTransactionType = transactionType;
     document.querySelectorAll(".view").forEach(view=>{
       view.classList.toggle("active", view.id === viewId);
     });
     document.querySelectorAll("[data-view]").forEach(button=>{
-      button.classList.toggle("active", button.dataset.view === viewId);
+      button.classList.toggle("active", button.dataset.view === viewId &&
+        (!button.dataset.transactionType || button.dataset.transactionType === currentTransactionType));
     });
+    updateTransactionLabels();
+    if (viewId === "expense-view"){
+      renderExpensesList();
+      renderBudgetProgress();
+    }
     if (viewId === "stats-view") renderCharts();
+  }
+
+  function updateTransactionLabels(){
+    const isSale = currentTransactionType === "sale";
+    document.getElementById("transaction-form-title").textContent = isSale ? "Add a sale" : "Add an expense";
+    document.getElementById("transaction-submit").textContent = isSale ? "Add sale" : "Add expense";
+    document.getElementById("transaction-history-title").textContent = isSale ? "Sales history" : "Expense history";
   }
 
   // ---------- Palette ----------
@@ -559,8 +606,9 @@
     });
   }
   document.querySelectorAll("[data-view]").forEach(button=>{
-    button.addEventListener("click", ()=>setActiveView(button.dataset.view));
+    button.addEventListener("click", ()=>setActiveView(button.dataset.view, button.dataset.transactionType));
   });
+  updateTransactionLabels();
   applyPalette(localStorage.getItem("tcg_tracker_palette") || localStorage.getItem("riftbound_palette") || "violet");
 
   // ---------- Category select ----------
@@ -654,6 +702,7 @@
     expenses = (data || []).map(expense=>({
       ...expense,
       game: expense.game || "riftbound",
+      type: expense.type === "sale" ? "sale" : "expense",
       category: LEGACY_CATEGORIES[expense.category] || expense.category
     }));
     renderExpensesList();
@@ -686,7 +735,8 @@
     if (!(amount > 0) || !date) return;
 
     const { error } = await sb.from("expenses").insert({
-      user_id: session.user.id, game: currentGame, category, amount, date, note: note || null
+      user_id: session.user.id, game: currentGame, type: currentTransactionType,
+      category, amount, date, note: note || null
     });
     if (error){ alert("Error adding expense: " + error.message); return; }
 
@@ -746,11 +796,11 @@
   // ---------- Rendering: expenses list ----------
   function renderExpensesList(){
     const container = document.getElementById("expenses-list");
-    const visibleExpenses = expenses.filter(exp=>exp.game === currentGame);
+    const visibleExpenses = expenses.filter(exp=>exp.game === currentGame && exp.type === currentTransactionType);
     document.getElementById("expense-game-label").textContent = " - " + (GAMES[currentGame] || "Other TCGs");
     container.innerHTML = "";
     if (!visibleExpenses.length){
-      container.innerHTML = `<div class="empty-state">No expenses recorded yet.</div>`;
+      container.innerHTML = `<div class="empty-state">No ${currentTransactionType === "sale" ? "sales" : "expenses"} recorded yet.</div>`;
       return;
     }
     visibleExpenses.forEach(exp=>{
@@ -804,13 +854,13 @@
   // ---------- Rendering: budget ----------
   function renderBudgetProgress(){
     const key = currentMonthKey();
-    const spent = expenses.filter(e=>e.game===currentGame && monthKey(e.date)===key).reduce((s,e)=>s+Number(e.amount),0);
+    const spent = expenses.filter(e=>e.game===currentGame && monthKey(e.date)===key).reduce((s,e)=>s+signedAmount(e),0);
     const budgetVal = parseAmount(document.getElementById("budget-input").value) || 0;
     const pct = budgetVal > 0 ? Math.min((spent/budgetVal)*100, 999) : 0;
     const fill = document.getElementById("budget-progress");
     fill.style.width = Math.min(pct,100) + "%";
     fill.style.background = pct >= 100 ? "var(--danger)" : pct >= 80 ? "var(--warn)" : "var(--accent)";
-    document.getElementById("budget-spent-lbl").textContent = fmtCHF(spent) + " spent";
+    document.getElementById("budget-spent-lbl").textContent = fmtCHF(spent) + " net balance";
     document.getElementById("budget-pct-lbl").textContent = budgetVal > 0 ? Math.round(pct) + "%" : "—";
     const alertEl = document.getElementById("budget-alert");
     if (budgetVal > 0 && spent > budgetVal){
@@ -904,37 +954,70 @@
     return `${String(start.getDate()).padStart(2,"0")} - ${String(end.getDate()).padStart(2,"0")} ${MONTHS_EN[end.getMonth()]} ${end.getFullYear()}`;
   }
 
+  function getStatsPeriodExpenses(){
+    const { start, end } = periodBounds();
+    const rangeStart = isoDate(start);
+    const rangeEnd = isoDate(end);
+    return getStatsExpenses().filter(expense=>expense.date >= rangeStart && expense.date <= rangeEnd);
+  }
+
+  function transactionTotals(transactions){
+    return transactions.reduce((totals, transaction)=>{
+      totals[transaction.type] += Number(transaction.amount) || 0;
+      return totals;
+    }, { expense:0, sale:0 });
+  }
+
   function renderStatSummary(){
-    const selectedExpenses = getStatsExpenses();
-    const key = currentMonthKey();
-    const monthTotal = selectedExpenses.filter(e=>monthKey(e.date)===key).reduce((s,e)=>s+Number(e.amount),0);
-    const allTimeTotal = selectedExpenses.reduce((s,e)=>s+Number(e.amount),0);
-    document.getElementById("stats-month-total").textContent = fmtCHF(monthTotal);
-    document.getElementById("stats-all-time-total").textContent = fmtCHF(allTimeTotal);
-    document.getElementById("stats-expense-count").textContent = String(selectedExpenses.length);
+    const selectedTransactions = getStatsPeriodExpenses();
+    const totals = transactionTotals(selectedTransactions);
+    document.getElementById("stats-expense-total").textContent = "-" + fmtCHF(totals.expense);
+    document.getElementById("stats-sale-total").textContent = "+" + fmtCHF(totals.sale);
+    document.getElementById("stats-net-total").textContent = fmtCHF(totals.sale - totals.expense);
   }
 
   function renderGameBreakdown(){
     const container = document.getElementById("game-breakdown-list");
-    const key = currentMonthKey();
     const totals = {};
-    expenses.filter(e=>monthKey(e.date)===key).forEach(e=>{
-      totals[e.game] = (totals[e.game] || 0) + Number(e.amount);
+    const transactions = getStatsPeriodExpenses();
+    transactions.forEach(transaction=>{
+      if (!totals[transaction.game]) totals[transaction.game] = { expense:0, sale:0 };
+      totals[transaction.game][transaction.type] += Number(transaction.amount) || 0;
     });
-    const entries = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    const entries = Object.entries(totals).sort((a,b)=>
+      (b[1].sale - b[1].expense) - (a[1].sale - a[1].expense)
+    );
     container.innerHTML = "";
     if (!entries.length){
-      container.innerHTML = `<div class="empty-state">No expenses this month yet.</div>`;
+      container.innerHTML = `<div class="empty-state">No transactions in this period yet.</div>`;
       return;
     }
     entries.forEach(([game, total])=>{
       const row = document.createElement("div");
       row.className = "game-total-row";
-      row.innerHTML = `<span class="cat-dot" style="background:var(--accent)"></span>
-        <span class="name">${escapeHtml(GAMES[game] || "Other TCGs")}</span>
-        <span class="amount">${fmtCHF(total)}</span>`;
+      row.innerHTML = `<span class="name">${escapeHtml(GAMES[game] || "Other TCGs")}</span>
+        <span class="amount expense">-${fmtCHF(total.expense)}</span>
+        <span class="amount sale">+${fmtCHF(total.sale)}</span>
+        <span class="amount net">${fmtCHF(total.sale - total.expense)}</span>`;
       container.appendChild(row);
+
+      transactions
+        .filter(transaction=>transaction.game === game)
+        .sort((a,b)=>b.date.localeCompare(a.date))
+        .forEach(transaction=>{
+          const detail = document.createElement("div");
+          const isSale = transaction.type === "sale";
+          detail.className = "game-detail-row";
+          detail.innerHTML = `
+            <span class="date">${fmtDate(transaction.date)}</span>
+            <span class="type ${transaction.type}">${isSale ? "Sale" : "Purchase"}</span>
+            <span>${escapeHtml(transaction.category || "Other")}${transaction.note ? " - " + escapeHtml(transaction.note) : ""}</span>
+            <span class="amount ${transaction.type}">${isSale ? "+" : "-"}${fmtCHF(transaction.amount)}</span>`;
+          container.appendChild(detail);
+        });
     });
+    document.getElementById("game-breakdown-title").textContent =
+      `${statsPeriodLabel()} by TCG`;
   }
 
   function renderDonut(){
@@ -946,37 +1029,36 @@
     ctx.scale(dpr,dpr);
     ctx.clearRect(0,0,size,size);
 
-    const key = currentMonthKey();
-    const totals = {};
-    let grandTotal = 0;
-    getStatsExpenses().filter(e=>monthKey(e.date)===key).forEach(e=>{
-      totals[e.category] = (totals[e.category]||0) + Number(e.amount);
-      grandTotal += Number(e.amount);
-    });
+    const totals = transactionTotals(getStatsPeriodExpenses());
+    const grandTotal = totals.sale - totals.expense;
 
     document.getElementById("donut-total").innerHTML =
-      `<div class="num">${fmtCHF(grandTotal)}</div><div class="lbl">${monthLabel(key)}</div>`;
+      `<div class="num">${fmtCHF(grandTotal)}</div><div class="lbl">${statsPeriodLabel()} net</div>`;
 
     const legend = document.getElementById("donut-legend");
     legend.innerHTML = "";
 
-    if (grandTotal <= 0){
+    if (totals.expense <= 0 && totals.sale <= 0){
       ctx.beginPath();
       ctx.arc(size/2, size/2, size/2-10, 0, Math.PI*2);
       ctx.strokeStyle = getCss("--border"); ctx.lineWidth = 18; ctx.stroke();
-      legend.innerHTML = `<div class="empty-state">No expenses this month yet.</div>`;
+      legend.innerHTML = `<div class="empty-state">No transactions in this period yet.</div>`;
       return;
     }
 
-    const entries = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    const entries = [
+      ["Purchases", totals.expense, getCss("--danger")],
+      ["Sales", totals.sale, getCss("--success")]
+    ].filter(entry=>entry[1] > 0);
+    const total = totals.expense + totals.sale;
     let start = -Math.PI/2;
     const cx = size/2, cy = size/2, r = size/2 - 14;
-    entries.forEach(([cat, val])=>{
-      const frac = val/grandTotal;
+    entries.forEach(([label, val, color])=>{
+      const frac = val/total;
       const end = start + frac*Math.PI*2;
       ctx.beginPath();
       ctx.arc(cx, cy, r, start, end);
-      ctx.strokeStyle = CATEGORY_COLORS[cat] || "#94a3b8";
+      ctx.strokeStyle = color;
       ctx.lineWidth = 26;
       ctx.lineCap = "butt";
       ctx.stroke();
@@ -984,8 +1066,8 @@
 
       const item = document.createElement("div");
       item.className = "legend-item";
-      item.innerHTML = `<span class="cat-dot" style="background:${CATEGORY_COLORS[cat]||"#94a3b8"}"></span>
-        <span class="name">${escapeHtml(cat)}</span>
+      item.innerHTML = `<span class="cat-dot" style="background:${color}"></span>
+        <span class="name">${label}</span>
         <span class="val">${Math.round(frac*100)}% · ${fmtCHF(val)}</span>`;
       legend.appendChild(item);
     });
@@ -1003,16 +1085,18 @@
     ctx.clearRect(0,0,w,h);
 
     const keys = chartBuckets();
-    const bounds = periodBounds();
-    const rangeStart = isoDate(bounds.start);
-    const rangeEnd = isoDate(bounds.end);
-    const selectedExpenses = getStatsExpenses().filter(expense=>expense.date >= rangeStart && expense.date <= rangeEnd);
-    const totals = keys.map(k=>selectedExpenses.filter(e=>expenseBucket(e)===k).reduce((s,e)=>s+Number(e.amount),0));
-    const max = Math.max(...totals, 1);
+    const selectedExpenses = getStatsPeriodExpenses();
+    const expenseTotals = keys.map(k=>selectedExpenses
+      .filter(e=>e.type === "expense" && expenseBucket(e)===k)
+      .reduce((s,e)=>s+Number(e.amount),0));
+    const saleTotals = keys.map(k=>selectedExpenses
+      .filter(e=>e.type === "sale" && expenseBucket(e)===k)
+      .reduce((s,e)=>s+Number(e.amount),0));
+    const max = Math.max(...expenseTotals, ...saleTotals, 1);
 
     const padL = 8, padB = 26, padT = 14, padR = 8;
     const chartW = w - padL - padR, chartH = h - padT - padB;
-    const barW = chartW / keys.length * 0.55;
+    const barW = chartW / keys.length * 0.35;
     const gap = chartW / keys.length;
 
     // gridlines
@@ -1024,23 +1108,24 @@
 
     const selectedBucket = expenseBucket({ date: statsCursor });
     keys.forEach((k, i)=>{
-      const val = totals[i];
-      const barH = max > 0 ? (val/max)*chartH : 0;
-      const x = padL + gap*i + (gap-barW)/2;
-      const y = padT + chartH - barH;
       const isCurrent = k === selectedBucket;
-      ctx.fillStyle = isCurrent ? getCss("--accent-strong") : getCss("--accent");
-      ctx.globalAlpha = isCurrent ? 1 : 0.55;
-      roundRect(ctx, x, y, barW, Math.max(barH,2), 4);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      [["--danger", expenseTotals[i], 0], ["--success", saleTotals[i], 1]].forEach(([color, val, offset])=>{
+        const barH = max > 0 ? (val/max)*chartH : 0;
+        const x = padL + gap*i + (gap - barW*2 - 3)/2 + offset*(barW+3);
+        const y = padT + chartH - barH;
+        ctx.fillStyle = getCss(color);
+        ctx.globalAlpha = isCurrent ? 1 : 0.55;
+        roundRect(ctx, x, y, barW, Math.max(barH,2), 4);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
 
       ctx.fillStyle = getCss("--text-dim");
       ctx.font = "11px ui-sans-serif, sans-serif";
       ctx.textAlign = "center";
       const labelStep = Math.max(1, Math.ceil(keys.length / 12));
       if (i % labelStep === 0 || i === keys.length - 1){
-        ctx.fillText(chartBucketLabel(k), x + barW/2, h - 8);
+        ctx.fillText(chartBucketLabel(k), padL + gap*i + gap/2, h - 8);
       }
     });
     const granularityLabels = { month:"month", week:"week", year:"year" };
